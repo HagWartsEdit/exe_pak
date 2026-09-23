@@ -27,3 +27,4 @@ EXE PAK V4 — Cloudflare Worker + D1
 - پنل مدیریت لینک عمومی در سایت ندارد؛ آدرس آن /admin.html است.
 - پنل کاربری /account.html است.
 - جداول user_favorites و download_history اگر وجود نداشته باشند Worker آنها را خودکار می‌سازد.
+.
