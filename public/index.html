@@ -1,109 +1,53 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EXE PAK | مرکز مود و پک</title>
 <meta name="description" content="مرجع مودها و پک‌های GTA San Andreas و SAMP">
 <style>
 :root{--bg:#07070b;--panel:#101019;--panel2:#151521;--line:#29293a;--text:#f4f4f7;--muted:#9b9baa;--a:#a855f7;--b:#ec4899;--good:#22c55e;--danger:#ef4444}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% -10%,#29123c 0,#07070b 35%),var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif}
 a{color:inherit;text-decoration:none}.wrap{max-width:1180px;margin:auto;padding:0 18px}
-header{position:sticky;top:0;z-index:20;background:#07070be8;backdrop-filter:blur(14px);border-bottom:1px solid #242432}
-.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{font-size:24px;font-weight:900;letter-spacing:.5px}.logo i{font-style:normal;color:var(--a)}
-nav{display:flex;gap:18px;color:#c7c7d2;font-size:14px}nav a:hover{color:#fff}
-.btn{border:1px solid #3a2949;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:white;border-radius:12px;padding:11px 16px;cursor:pointer;font-weight:800}.btn.alt{background:#14141e;border-color:#303044}.btn.danger{background:#35141a;border-color:#61202a}
-.hero{padding:78px 0 38px;display:grid;grid-template-columns:1.4fr .6fr;gap:30px;align-items:center}.badge{display:inline-flex;padding:7px 11px;border:1px solid #3d2a51;border-radius:999px;color:#d8b4fe;background:#160e20;font-size:12px}
-h1{font-size:clamp(40px,7vw,76px);line-height:1;margin:16px 0}.hero p{color:var(--muted);font-size:17px;line-height:2;max-width:700px}.hero-art{height:270px;border:1px solid #32233d;border-radius:28px;background:linear-gradient(145deg,#17121d,#0d0d14);display:grid;place-items:center;box-shadow:0 20px 80px #0008}.hero-art strong{font-size:70px;color:#fff;text-shadow:0 0 35px #a855f7}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 28px}.search{flex:1;min-width:220px;background:#101019;border:1px solid #2a2a39;color:#fff;border-radius:12px;padding:13px 15px;outline:none}.search:focus{border-color:#8b5cf6}
-.chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.chip{white-space:nowrap;border:1px solid #2b2b3b;background:#101019;color:#bdbdc9;padding:9px 13px;border-radius:999px;cursor:pointer}.chip.active{border-color:#9d5cff;color:#fff;background:#20142d}
+header{position:sticky;top:0;z-index:20;background:#07070be8;backdrop-filter:blur(14px);border-bottom:1px solid #242432}.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{font-size:24px;font-weight:900}.logo i{font-style:normal;color:var(--a)}nav{display:flex;gap:18px;color:#c7c7d2;font-size:14px}nav a:hover{color:#fff}
+.btn{border:1px solid #3a2949;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:white;border-radius:12px;padding:11px 16px;cursor:pointer;font-weight:800}.btn.alt{background:#14141e;border-color:#303044}.btn.danger{background:#35141a;border-color:#61202a}.btn.small{padding:8px 11px;font-size:12px}
+.hero{padding:78px 0 38px;display:grid;grid-template-columns:1.4fr .6fr;gap:30px;align-items:center}.badge{display:inline-flex;padding:7px 11px;border:1px solid #3d2a51;border-radius:999px;color:#d8b4fe;background:#160e20;font-size:12px}h1{font-size:clamp(40px,7vw,76px);line-height:1;margin:16px 0}.hero p{color:var(--muted);font-size:17px;line-height:2;max-width:700px}.hero-art{height:270px;border:1px solid #32233d;border-radius:28px;background:linear-gradient(145deg,#17121d,#0d0d14);display:grid;place-items:center;box-shadow:0 20px 80px #0008}.hero-art strong{font-size:70px;color:#fff;text-shadow:0 0 35px #a855f7}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 28px}.search{flex:1;min-width:220px;background:#101019;border:1px solid #2a2a39;color:#fff;border-radius:12px;padding:13px 15px;outline:none}.search:focus{border-color:#8b5cf6}.chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.chip{white-space:nowrap;border:1px solid #2b2b3b;background:#101019;color:#bdbdc9;padding:9px 13px;border-radius:999px;cursor:pointer}.chip.active{border-color:#9d5cff;color:#fff;background:#20142d}
 .section{padding:30px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:16px}.section h2{margin:0;font-size:25px}.muted{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:linear-gradient(180deg,#12121b,#0d0d13);border:1px solid #262635;border-radius:18px;overflow:hidden;transition:.2s}.card:hover{transform:translateY(-3px);border-color:#593675}.thumb{height:180px;background:#171720;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover}.body{padding:15px}.title{font-weight:900;font-size:17px}.desc{color:#a9a9b5;font-size:13px;line-height:1.9;margin:9px 0;min-height:48px}.meta{display:flex;gap:8px;flex-wrap:wrap;color:#8e8e9d;font-size:11px}.actions{display:flex;gap:8px;margin-top:14px}.actions .btn{flex:1;text-align:center;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:linear-gradient(180deg,#12121b,#0d0d13);border:1px solid #262635;border-radius:18px;overflow:hidden;transition:.2s}.card:hover{transform:translateY(-3px);border-color:#593675}.thumb{height:180px;background:#171720;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover}.body{padding:15px}.title{font-weight:900;font-size:17px}.desc{color:#a9a9b5;font-size:13px;line-height:1.9;margin:9px 0;min-height:48px}.meta{display:flex;gap:8px;flex-wrap:wrap;color:#8e8e9d;font-size:11px}.actions{display:flex;gap:8px;margin-top:14px}.actions .btn{flex:1;text-align:center;padding:10px}.fav{width:42px;min-width:42px}.fav.on{border-color:#ec4899;color:#ff9bd0}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:18px;border:1px solid #272735;background:#101019;border-radius:16px}.stat b{display:block;font-size:25px;margin-top:5px}
-footer{margin-top:55px;border-top:1px solid #222230;padding:28px 0;color:#77778a}
-.modal{position:fixed;inset:0;background:#000b;display:none;place-items:center;padding:18px;z-index:50}.modal.show{display:grid}.modalbox{width:min(720px,100%);max-height:90vh;overflow:auto;background:#11111a;border:1px solid #333345;border-radius:20px;padding:20px}.close{float:left;background:none;border:0;color:#aaa;font-size:24px;cursor:pointer}
-form{display:grid;gap:10px}.input{background:#0b0b11;border:1px solid #2c2c3a;color:#fff;border-radius:11px;padding:12px}.hidden{display:none!important}
-@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{height:190px}.grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){nav{display:none}.grid{grid-template-columns:1fr}.hero{padding-top:48px}.thumb{height:200px}}
+footer{margin-top:55px;border-top:1px solid #222230;padding:28px 0;color:#77778a}.modal{position:fixed;inset:0;background:#000b;display:none;place-items:center;padding:18px;z-index:50}.modal.show{display:grid}.modalbox{width:min(720px,100%);max-height:90vh;overflow:auto;background:#11111a;border:1px solid #333345;border-radius:20px;padding:20px}.close{float:left;background:none;border:0;color:#aaa;font-size:24px;cursor:pointer}form{display:grid;gap:10px}.input{background:#0b0b11;border:1px solid #2c2c3a;color:#fff;border-radius:11px;padding:12px}.hidden{display:none!important}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{height:190px}.grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){nav{display:none}.grid{grid-template-columns:1fr}.hero{padding-top:48px}.thumb{height:200px}}
 </style>
 </head>
 <body>
 <header><div class="wrap nav"><a class="logo" href="#">EXE <i>PAK</i></a><nav><a href="#mods">مودها</a><a href="#packs">پک‌ها</a><a href="#stats">آمار</a><a href="#about">درباره</a></nav><button class="btn alt" id="loginBtn">ورود</button></div></header>
-
 <main class="wrap">
-<section class="hero">
-<div><span class="badge">GTA SAN ANDREAS • SAMP</span><h1>دنیای <span style="color:#c084fc">EXE PAK</span></h1><p>مودها، پک‌ها و محتوای منتخب برای ساختن یک تجربه متفاوت از سن آندریاس.</p><a class="btn" href="#mods">مشاهده مودها</a></div>
-<div class="hero-art"><strong>XP</strong></div>
-</section>
-
-<section class="tools">
-<input id="search" class="search" placeholder="جستجو بین مودها و پک‌ها...">
-<div id="chips" class="chips"></div>
-</section>
-
+<section class="hero"><div><span class="badge">GTA SAN ANDREAS • SAMP</span><h1>دنیای <span style="color:#c084fc">EXE PAK</span></h1><p>مودها، پک‌ها و محتوای منتخب برای ساختن یک تجربه متفاوت از سن آندریاس.</p><a class="btn" href="#mods">مشاهده مودها</a></div><div class="hero-art"><strong>XP</strong></div></section>
+<section class="tools"><input id="search" class="search" placeholder="جستجو بین مودها و پک‌ها..."><div id="chips" class="chips"></div></section>
 <section id="mods" class="section"><div class="section-head"><div><h2>مودهای جدید</h2><div class="muted">محتوای تازه و منتخب</div></div><span class="muted" id="resultCount"></span></div><div id="modsGrid" class="grid"></div></section>
-
 <section id="packs" class="section"><div class="section-head"><div><h2>پک‌ها</h2><div class="muted">مجموعه‌های آماده</div></div></div><div id="packsGrid" class="grid"></div></section>
-
-<section id="stats" class="section"><div class="section-head"><h2>آمار سایت</h2></div><div class="stats">
-<div class="stat">بازدید کل<b id="sViews">—</b></div><div class="stat">دانلود کل<b id="sDownloads">—</b></div><div class="stat">کاربران<b id="sUsers">—</b></div><div class="stat">مودها<b id="sMods">—</b></div>
-</div></section>
-
+<section id="stats" class="section"><div class="section-head"><h2>آمار سایت</h2></div><div class="stats"><div class="stat">بازدید کل<b id="sViews">—</b></div><div class="stat">دانلود کل<b id="sDownloads">—</b></div><div class="stat">کاربران<b id="sUsers">—</b></div><div class="stat">مودها<b id="sMods">—</b></div></div></section>
 <section id="about" class="section"><div class="card" style="padding:22px"><h2>درباره EXE PAK</h2><p class="muted">یک مرجع ساده و سریع برای پیدا کردن مود و پک‌های GTA San Andreas و SAMP.</p></div></section>
-</main>
-
-<footer><div class="wrap">© EXE PAK — ساخته شده برای گیمرها</div></footer>
-
+</main><footer><div class="wrap">© EXE PAK — ساخته شده برای گیمرها</div></footer>
 <div class="modal" id="modal"><div class="modalbox"><button class="close" id="close">×</button><div id="modalContent"></div></div></div>
 <div class="modal" id="authModal"><div class="modalbox"><button class="close" id="authClose">×</button><div id="authContent"></div></div></div>
-
 <script>
-const API_BASE = ""; // اگر سایت را جدا از Worker نگه می‌داری، اینجا آدرس Worker را بگذار.
-let state={mods:[],packs:[],cats:[],cat:"all",q:"",stats:{}};
-
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const api=async(path,opt={})=>{const r=await fetch(API_BASE+"/api"+path,{...opt,headers:{"Content-Type":"application/json",...(opt.headers||{})}});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"خطا");return j};
-
-function render(){
- const q=state.q.trim().toLowerCase(), cat=state.cat;
- const mods=state.mods.filter(x=>(cat==="all"||x.category===cat)&&(!q||(`${x.name} ${x.description} ${x.author}`.toLowerCase().includes(q))));
- $("#resultCount").textContent=mods.length+" مورد";
- $("#modsGrid").innerHTML=mods.map(card).join("")||'<div class="muted">موردی پیدا نشد.</div>';
- $("#packsGrid").innerHTML=state.packs.map(card).join("")||'<div class="muted">هنوز پکی ثبت نشده.</div>';
-}
-function card(x){
- return `<article class="card"><div class="thumb">${x.image?`<img loading="lazy" src="${esc(x.image)}" alt="${esc(x.name)}">`:""}</div><div class="body"><div class="title">${esc(x.name)}</div><div class="desc">${esc(x.description||"")}</div><div class="meta"><span>${esc(x.categoryName||x.category||"")}</span><span>${esc(x.version||"")}</span><span>${esc(x.size||"")}</span></div><div class="actions"><button class="btn" onclick="openItem('${esc(x.id)}')">جزئیات</button>${x.downloadUrl?`<a class="btn alt" href="${esc(x.downloadUrl)}" target="_blank" rel="noopener" onclick="countDownload('${esc(x.id)}')">دانلود</a>`:""}</div></div></article>`;
-}
-window.openItem=id=>{
- const x=[...state.mods,...state.packs].find(a=>a.id===id);if(!x)return;
- $("#modalContent").innerHTML=`<h2>${esc(x.name)}</h2><p class="muted">${esc(x.description||"")}</p><div class="meta">${esc(x.author||"")} ${esc(x.version||"")} ${esc(x.size||"")}</div>${x.sourceUrl?`<p><a class="btn alt" href="${esc(x.sourceUrl)}" target="_blank" rel="noopener">مشاهده منبع</a></p>`:""}${x.downloadUrl?`<p><a class="btn" href="${esc(x.downloadUrl)}" target="_blank" rel="noopener" onclick="countDownload('${esc(x.id)}')">دانلود فایل</a></p>`:""}`;
- $("#modal").classList.add("show");
-};
-window.countDownload=async id=>{try{await api("/stats/download",{method:"POST",body:JSON.stringify({id})})}catch(e){}};
-$("#close").onclick=()=>$("#modal").classList.remove("show");
-$("#modal").onclick=e=>{if(e.target.id==="modal")$("#modal").classList.remove("show")};
-$("#search").oninput=e=>{state.q=e.target.value;render()};
-
-async function load(){
- try{
-  const d=await api("/public");
-  state.mods=d.mods||[];state.packs=d.packs||[];state.cats=d.categories||[];state.stats=d.stats||{};
-  $("#chips").innerHTML=[{id:"all",name:"همه"},...state.cats].map(c=>`<button class="chip ${state.cat===c.id?"active":""}" onclick="setCat('${esc(c.id)}')">${esc(c.name)}</button>`).join("");
-  $("#sViews").textContent=state.stats.views??0;$("#sDownloads").textContent=state.stats.downloads??0;$("#sUsers").textContent=state.stats.users??0;$("#sMods").textContent=state.mods.length;
-  render(); await api("/stats/view",{method:"POST",body:"{}"});
- }catch(e){$("#modsGrid").innerHTML='<div class="muted">در حال حاضر اطلاعات در دسترس نیست.</div>'}
-}
-window.setCat=c=>{state.cat=c;document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));event.target.classList.add("active");render()};
-
-$("#loginBtn").onclick=()=>auth("login");
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const token=()=>localStorage.getItem("exe_token")||"";
+const api=async(path,opt={})=>{const h={"Content-Type":"application/json",...(opt.headers||{})};if(token())h.Authorization="Bearer "+token();const r=await fetch("/api"+path,{...opt,headers:h});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||"خطا");return j};
+let state={mods:[],packs:[],cats:[],cat:"all",q:"",favorites:new Set()};
+function render(){const q=state.q.trim().toLowerCase(),cat=state.cat;const mods=state.mods.filter(x=>(cat==="all"||x.category===cat)&&(!q||(`${x.name} ${x.description} ${x.author}`.toLowerCase().includes(q))));$("#resultCount").textContent=mods.length+" مورد";$("#modsGrid").innerHTML=mods.map(x=>card(x,"mod")).join("")||'<div class="muted">موردی پیدا نشد.</div>';$("#packsGrid").innerHTML=state.packs.map(x=>card(x,"pack")).join("")||'<div class="muted">هنوز پکی ثبت نشده.</div>'}
+function card(x,type){const fav=state.favorites.has(type+":"+x.id);return `<article class="card"><div class="thumb">${x.image?`<img loading="lazy" src="${esc(x.image)}" alt="${esc(x.name)}">`:""}</div><div class="body"><div class="title">${esc(x.name)}</div><div class="desc">${esc(x.description||"")}</div><div class="meta"><span>${esc(x.categoryName||x.category||"")}</span><span>${esc(x.version||"")}</span><span>${esc(x.size||"")}</span></div><div class="actions"><button class="btn alt" onclick="openItem('${esc(x.id)}','${type}')">جزئیات</button><button class="btn fav ${fav?"on":""}" title="المورد علاقه" onclick="favoriteItem('${esc(x.id)}','${type}')">♥</button>${x.downloadUrl?`<a class="btn" href="${esc(x.downloadUrl)}" target="_blank" rel="noopener" onclick="countDownload('${esc(x.id)}','${type}')">دانلود</a>`:""}</div></div></article>`}
+window.openItem=(id,type)=>{const arr=type==="pack"?state.packs:state.mods,x=arr.find(a=>a.id===id);if(!x)return;$("#modalContent").innerHTML=`<h2>${esc(x.name)}</h2><p class="muted">${esc(x.description||"")}</p><div class="meta">${esc(x.author||"")} ${esc(x.version||"")} ${esc(x.size||"")}</div>${x.sourceUrl?`<p><a class="btn alt" href="${esc(x.sourceUrl)}" target="_blank">مشاهده منبع</a></p>`:""}${x.downloadUrl?`<p><a class="btn" href="${esc(x.downloadUrl)}" target="_blank" onclick="countDownload('${esc(x.id)}','${type}')">دانلود فایل</a></p>`:""}`;$("#modal").classList.add("show")};
+window.countDownload=async(id,type)=>{try{await api("/stats/download",{method:"POST",body:JSON.stringify({id,type})})}catch(e){}};
+window.favoriteItem=async(id,type)=>{if(!token()){auth("login");return}try{const d=await api("/account/favorite",{method:"POST",body:JSON.stringify({id,type})});const k=type+":"+id;d.favorite?state.favorites.add(k):state.favorites.delete(k);render()}catch(e){alert(e.message)}};
+$("#close").onclick=()=>$("#modal").classList.remove("show");$("#modal").onclick=e=>{if(e.target.id==="modal")$("#modal").classList.remove("show")};$("#search").oninput=e=>{state.q=e.target.value;render()};
+window.setCat=c=>{state.cat=c;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x.dataset.id===c));render()};
+async function refreshAccount(){if(!token()){state.favorites=new Set();updateLogin();return}try{const d=await api("/account");state.favorites=new Set((d.favorites||[]).map(x=>x.item_type+":"+x.item_id));updateLogin(d.user)}catch{localStorage.removeItem("exe_token");state.favorites=new Set();updateLogin()}}
+function updateLogin(u){$("#loginBtn").textContent=u?u.name+" • حساب من":"ورود"}
+$("#loginBtn").onclick=()=>token()?location.href="/account.html":auth("login");
 $("#authClose").onclick=()=>$("#authModal").classList.remove("show");
-function auth(mode){
- $("#authContent").innerHTML=mode==="login"?`<h2>ورود</h2><form id="af"><input class="input" name="email" type="email" placeholder="ایمیل" required><input class="input" name="password" type="password" placeholder="رمز عبور" required><button class="btn">ورود</button></form><p class="muted">حساب نداری؟ <a href="#" id="switch">ثبت‌نام</a></p>`:`<h2>ثبت‌نام</h2><form id="af"><input class="input" name="name" placeholder="نام کاربری" required><input class="input" name="email" type="email" placeholder="ایمیل" required><input class="input" name="password" type="password" minlength="8" placeholder="رمز عبور (حداقل ۸ کاراکتر)" required><button class="btn">ساخت حساب</button></form><p class="muted">حساب داری؟ <a href="#" id="switch">ورود</a></p>`;
- $("#authModal").classList.add("show");$("#switch").onclick=e=>{e.preventDefault();auth(mode==="login"?"register":"login")};
- $("#af").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target);try{const d=await api("/auth/"+mode,{method:"POST",body:JSON.stringify(Object.fromEntries(fd))});localStorage.setItem("exe_token",d.token);$("#authModal").classList.remove("show");$("#loginBtn").textContent="حساب من"}catch(err){alert(err.message)}};
-}
+function auth(mode){$("#authContent").innerHTML=mode==="login"?`<h2>ورود به حساب</h2><form id="af"><input class="input" name="email" type="email" placeholder="ایمیل" required><input class="input" name="password" type="password" placeholder="رمز عبور" required><button class="btn">ورود</button></form><p class="muted">حساب نداری؟ <a href="#" id="switch">ثبت‌نام</a></p>`:`<h2>ساخت حساب</h2><form id="af"><input class="input" name="name" placeholder="نام کاربری" required><input class="input" name="email" type="email" placeholder="ایمیل" required><input class="input" name="password" type="password" minlength="8" placeholder="رمز عبور (حداقل ۸ کاراکتر)" required><button class="btn">ثبت‌نام</button></form><p class="muted">حساب داری؟ <a href="#" id="switch">ورود</a></p>`;$("#authModal").classList.add("show");$("#switch").onclick=e=>{e.preventDefault();auth(mode==="login"?"register":"login")};$("#af").onsubmit=async e=>{e.preventDefault();try{const d=await api("/auth/"+mode,{method:"POST",body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});localStorage.setItem("exe_token",d.token);$("#authModal").classList.remove("show");await refreshAccount();if(mode==="login")location.href="/account.html"}catch(err){alert(err.message)}}}
+async function load(){try{const d=await api("/public");state.mods=d.mods||[];state.packs=d.packs||[];state.cats=d.categories||[];$("#chips").innerHTML=[{id:"all",name:"همه"},...state.cats].map(c=>`<button data-id="${esc(c.id)}" class="chip ${state.cat===c.id?"active":""}" onclick="setCat('${esc(c.id)}')">${esc(c.name)}</button>`).join("");$("#sViews").textContent=d.stats?.views??0;$("#sDownloads").textContent=d.stats?.downloads??0;$("#sUsers").textContent=d.stats?.users??0;$("#sMods").textContent=state.mods.length;render();await api("/stats/view",{method:"POST",body:"{}"});await refreshAccount()}catch(e){$("#modsGrid").innerHTML='<div class="muted">در حال حاضر اطلاعات در دسترس نیست.</div>'}}
 load();
-</script>
-</body>
-</html>
+</script></body></html>

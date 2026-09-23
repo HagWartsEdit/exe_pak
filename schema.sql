@@ -55,7 +55,23 @@ CREATE TABLE IF NOT EXISTS site_stats (
  downloads INTEGER NOT NULL DEFAULT 0
 );
 
-INSERT OR IGNORE INTO site_stats(id,views,downloads) VALUES(1,0,0);
+CREATE TABLE IF NOT EXISTS user_favorites (
+ user_id TEXT NOT NULL,
+ item_type TEXT NOT NULL,
+ item_id TEXT NOT NULL,
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(user_id,item_type,item_id)
+);
 
+CREATE TABLE IF NOT EXISTS download_history (
+ id TEXT PRIMARY KEY,
+ user_id TEXT,
+ item_type TEXT NOT NULL,
+ item_id TEXT,
+ item_name TEXT DEFAULT '',
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO site_stats(id,views,downloads) VALUES(1,0,0);
 INSERT OR IGNORE INTO categories(id,name,sort_order) VALUES
 ('car','ماشین',1),('graphics','گرافیک',2),('character','کاراکتر',3),('samp','SAMP',4),('gameplay','گیم‌پلی',5);
