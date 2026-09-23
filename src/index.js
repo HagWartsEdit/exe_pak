@@ -11,7 +11,7 @@ function ub64(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="="
 async function sha256(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s))}
 async function derive(password,salt){
  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);
- const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:120000,hash:"SHA-256"},key,256);
+ const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:10000,hash:"SHA-256"},key,256);
  return b64u(bits);
 }
 async function sign(payload,secret){
