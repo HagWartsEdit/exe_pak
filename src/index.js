@@ -27,14 +27,17 @@ export default {async fetch(r,e){let u=new URL(r.url),o=e.ALLOWED_ORIGIN||'*';if
 try{
  await ensureSchema(e.DB);
  if(u.pathname==='/api/public'){
-   let [s,m,p,online,members]=await Promise.all([
+   let [s,m,p,online,members,creators,comments,leaderboard]=await Promise.all([
      e.DB.prepare('SELECT * FROM site_stats WHERE id=1').first(),
      e.DB.prepare('SELECT COUNT(*) n FROM messages').first(),
-     e.DB.prepare("SELECT p.id,p.title,p.body,p.image_url,p.download_url,p.category,p.author_id,p.created_at,p.view_count,p.download_count,u.username author,(SELECT COUNT(*) FROM comments c WHERE c.post_id=p.id) comment_count FROM posts p LEFT JOIN users u ON u.id=p.author_id ORDER BY p.id DESC LIMIT 30").all(),
+     e.DB.prepare("SELECT p.id,p.title,p.body,p.image_url,p.download_url,p.category,p.author_id,p.created_at,p.view_count,p.download_count,u.username author,(SELECT COUNT(*) FROM comments c WHERE c.post_id=p.id) comment_count FROM posts p LEFT JOIN users u ON u.id=p.author_id ORDER BY p.id DESC LIMIT 60").all(),
      e.DB.prepare("SELECT COUNT(*) n FROM users WHERE last_seen>=datetime('now','-5 minutes')").first(),
-     e.DB.prepare('SELECT COUNT(*) n FROM users').first()
+     e.DB.prepare('SELECT COUNT(*) n FROM users').first(),
+     e.DB.prepare("SELECT u.id,u.username,COUNT(p.id) posts,COALESCE(SUM(p.download_count),0) downloads,COALESCE(SUM(p.view_count),0) views FROM users u LEFT JOIN posts p ON p.author_id=u.id GROUP BY u.id ORDER BY downloads DESC,posts DESC LIMIT 6").all(),
+     e.DB.prepare('SELECT COUNT(*) n FROM comments').first(),
+     e.DB.prepare("SELECT u.username,COUNT(DISTINCT p.id) posts,COUNT(DISTINCT c.id) comments,(COUNT(DISTINCT p.id)*10+COUNT(DISTINCT c.id)*2) points FROM users u LEFT JOIN posts p ON p.author_id=u.id LEFT JOIN comments c ON c.user_id=u.id GROUP BY u.id HAVING points>0 ORDER BY points DESC LIMIT 10").all()
    ]);
-   return J({stats:{...s,messages:m?.n||0,online:online?.n||0,members:members?.n||0},posts:p.results||[]},200,o)
+   return J({stats:{...s,messages:m?.n||0,online:online?.n||0,members:members?.n||0,comments:comments?.n||0},posts:p.results||[],creators:creators.results||[],leaderboard:leaderboard.results||[]},200,o)
  }
  if(u.pathname==='/api/pageview'&&r.method==='POST'){await e.DB.prepare('UPDATE site_stats SET visits=visits+1 WHERE id=1').run();return J({ok:true},200,o)}
  if(u.pathname==='/api/register'&&r.method==='POST'){
