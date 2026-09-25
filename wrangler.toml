@@ -1,0 +1,12 @@
+name = "exe-pak"
+main = "src/index.js"
+compatibility_date = "2026-09-22"
+[assets]
+directory = "./public"
+binding = "ASSETS"
+[[d1_databases]]
+binding = "DB"
+database_name = "exe-pak-db"
+database_id = "PASTE_D1_DATABASE_ID_HERE"
+[vars]
+ALLOWED_ORIGIN = "*"
