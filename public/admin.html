@@ -1,1 +1,71 @@
-<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EXE PAK ADMIN</title><style>body{margin:0;background:#07070b;color:#eee;font-family:Arial,Vazirmatn}.w{max-width:1000px;margin:auto;padding:25px}.b{background:#111119;border:1px solid #fff2;border-radius:18px;padding:20px;margin:12px 0}input,textarea,select{width:100%;padding:12px;margin:7px 0;background:#050509;color:#fff;border:1px solid #fff2;border-radius:10px;box-sizing:border-box}textarea{min-height:130px}button{padding:11px 16px;border:0;border-radius:10px;background:#9238ff;color:white;cursor:pointer}.danger{background:#b52c56}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.n{display:block;font-size:30px;color:#c071ff;font-weight:900}@media(max-width:700px){.grid{grid-template-columns:1fr}}</style><div class=w><h1>⚡ EXE PAK ADMIN</h1><p id=e></p><div class=grid><div class=b>اعضا<strong id=u class=n>—</strong></div><div class=b>پست‌ها<strong id=p class=n>—</strong></div><div class=b>پیام‌ها<strong id=m class=n>—</strong></div></div><div class=b><h2>➕ انتشار پست</h2><input id=t placeholder="عنوان"><select id=c><option>مود</option><option>خبر</option><option>آموزش</option><option>پک</option></select><input id=i placeholder="لینک تصویر اختیاری"><textarea id=x placeholder="متن پست"></textarea><button onclick=add()>انتشار پست</button></div><div class=b><h2>پست‌ها</h2><div id=list>...</div></div><div class=b><h2>کاربران</h2><div id=users>...</div></div></div><script>let T=localStorage.getItem('exe_token')||'';const $=x=>document.getElementById(x);async function A(p,o={}){o.headers={'content-type':'application/json',Authorization:'Bearer '+T};let r=await fetch(p,o),d=await r.json();if(!r.ok)throw Error(d.error||'خطا');return d}const E=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));async function load(){try{let q=await A('/api/public');let us=await A('/api/admin/users');$('u').textContent=us.users.length;$('p').textContent=q.posts.length; $('m').textContent=q.stats.messages;$('list').innerHTML=q.posts.map(v=>`<div class=b><b>${E(v.title)}</b><p>${E(v.body)}</p><button class=danger onclick=del(${v.id})>حذف</button></div>`).join('')||'خالی';$('users').innerHTML=us.users.map(v=>`<div>${E(v.username)} — ${E(v.email)} — ${E(v.role)}</div>`).join('')}catch(z){$('e').textContent=z.message}}async function add(){try{await A('/api/admin/posts',{method:'POST',body:JSON.stringify({title:$('t').value,body:$('x').value,image_url:$('i').value,category:$('c').value})});$('t').value=$('x').value=$('i').value='';load()}catch(z){$('e').textContent=z.message}}async function del(id){if(confirm('حذف شود؟')){await A('/api/admin/posts/'+id,{method:'DELETE'});load()}}load()</script></html>
+<!doctype html>
+<html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXE PAK ADMIN</title>
+<style>
+body{margin:0;background:#07070b;color:#eee;font-family:Arial,Vazirmatn}.w{max-width:1000px;margin:auto;padding:25px}
+.b{background:#111119;border:1px solid #fff2;border-radius:18px;padding:20px;margin:12px 0}
+input,textarea,select{width:100%;padding:12px;margin:7px 0;background:#050509;color:#fff;border:1px solid #fff2;border-radius:10px;box-sizing:border-box}textarea{min-height:130px}
+button{padding:11px 16px;border:0;border-radius:10px;background:#9238ff;color:white;cursor:pointer;margin:4px}.danger{background:#b52c56}.edit{background:#0c8f9b}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.n{display:block;font-size:30px;color:#c071ff;font-weight:900}
+.preview{width:180px;height:110px;object-fit:cover;border-radius:12px;border:1px solid #fff2;display:none;margin:8px 0}
+.post{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:start}.post img{width:140px;height:100px;object-fit:cover;border-radius:12px}
+.small{color:#aaa;font-size:13px}@media(max-width:700px){.grid{grid-template-columns:1fr}.post{grid-template-columns:1fr}.post img{width:100%;height:180px}}
+</style>
+<div class=w>
+<h1>⚡ EXE PAK ADMIN</h1><p id=e></p>
+<div class=grid><div class=b>اعضا<strong id=u class=n>—</strong></div><div class=b>پست‌ها<strong id=p class=n>—</strong></div><div class=b>پیام‌ها<strong id=m class=n>—</strong></div></div>
+
+<div class=b>
+<h2 id=formTitle>➕ انتشار پست</h2>
+<input id=t placeholder="عنوان">
+<select id=c><option>مود</option><option>خبر</option><option>آموزش</option><option>پک</option></select>
+<input id=d placeholder="لینک دانلود">
+<label>عکس کاور:</label>
+<input id=f type=file accept="image/*">
+<img id=prev class=preview>
+<input id=i placeholder="یا لینک مستقیم تصویر (اختیاری)">
+<textarea id=x placeholder="متن پست"></textarea>
+<button onclick=save()>ذخیره پست</button><button id=cancel class=edit onclick=cancelEdit() style="display:none">انصراف از ویرایش</button>
+<p class=small>عکس را مستقیم انتخاب کن؛ بهتر است حجم آن کمتر از 700KB باشد.</p>
+</div>
+
+<div class=b><h2>پست‌ها</h2><div id=list>...</div></div>
+<div class=b><h2>کاربران</h2><div id=users>...</div></div>
+</div>
+<script>
+let T=localStorage.getItem('exe_token')||'', editing=0, selectedImage='';
+const $=x=>document.getElementById(x);
+async function A(p,o={}){o.headers={...(o.headers||{}),'content-type':'application/json',Authorization:'Bearer '+T};let r=await fetch(p,o),d=await r.json();if(!r.ok)throw Error(d.error||'خطا');return d}
+const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('f').onchange=()=>{
+ const file=$('f').files[0]; if(!file)return;
+ if(file.size>700*1024){$('e').textContent='حجم عکس زیاد است؛ لطفاً عکس کوچک‌تر از 700KB انتخاب کن.';$('f').value='';return}
+ const rd=new FileReader();rd.onload=()=>{selectedImage=rd.result;$('prev').src=selectedImage;$('prev').style.display='block'};rd.readAsDataURL(file);
+};
+async function load(){
+ try{
+  let q=await A('/api/admin/posts'),pub=await A('/api/public'),us=await A('/api/admin/users');
+  $('u').textContent=us.users.length;$('p').textContent=q.posts.length;$('m').textContent=pub.stats.messages;
+  $('list').innerHTML=q.posts.map(v=>`<div class="b post"><div>${v.image_data||v.image_url?`<img src="${E(v.image_data||v.image_url)}">`:''}</div><div><b>${E(v.title)}</b><p>${E(v.body)}</p><div class=small>${E(v.category)} ${v.download_url?'• لینک دانلود دارد':''}</div><button class=edit onclick='editPost(${v.id})'>✏️ ویرایش</button><button class=danger onclick=del(${v.id})>🗑️ حذف</button></div></div>`).join('')||'خالی';
+  $('users').innerHTML=us.users.map(v=>`<div>${E(v.username)} — ${E(v.email)} — ${E(v.role)}</div>`).join('');
+ }catch(z){$('e').textContent=z.message}
+}
+async function editPost(id){
+ try{
+  let q=await A('/api/admin/posts'),v=q.posts.find(x=>x.id==id);if(!v)return;
+  editing=id;$('formTitle').textContent='✏️ ویرایش پست';$('t').value=v.title||'';$('c').value=v.category||'مود';$('d').value=v.download_url||'';$('i').value=v.image_url||'';$('x').value=v.body||'';selectedImage=v.image_data||'';
+  if(selectedImage){$('prev').src=selectedImage;$('prev').style.display='block'}else{$('prev').style.display='none'}
+  $('cancel').style.display='inline-block';scrollTo({top:0,behavior:'smooth'});
+ }catch(z){$('e').textContent=z.message}
+}
+async function save(){
+ try{
+  let payload={title:$('t').value,body:$('x').value,image_url:$('i').value,download_url:$('d').value,category:$('c').value,image_data:selectedImage};
+  await A(editing?('/api/admin/posts/'+editing):'/api/admin/posts',{method:editing?'PUT':'POST',body:JSON.stringify(payload)});
+  cancelEdit();load();
+ }catch(z){$('e').textContent=z.message}
+}
+function cancelEdit(){editing=0;selectedImage='';$('formTitle').textContent='➕ انتشار پست';$('t').value='';$('d').value='';$('i').value='';$('x').value='';$('f').value='';$('prev').style.display='none';$('cancel').style.display='none';$('e').textContent=''}
+async function del(id){if(confirm('این پست حذف شود؟')){await A('/api/admin/posts/'+id,{method:'DELETE'});load()}}
+load();
+</script></html>
