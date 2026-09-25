@@ -7,6 +7,6 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "exe-pak-db"
-database_id = "818123a1-7a4f-422e-b1a1-d02db0562355"
+database_id = "PASTE_D1_DATABASE_ID_HERE"
 [vars]
 ALLOWED_ORIGIN = "*"
