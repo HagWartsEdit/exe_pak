@@ -19,6 +19,14 @@ async function ensureSchema(db){
   if(!names.includes('download_count'))await db.prepare("ALTER TABLE posts ADD COLUMN download_count INTEGER NOT NULL DEFAULT 0").run();
   await db.prepare("CREATE TABLE IF NOT EXISTS comments(id INTEGER PRIMARY KEY AUTOINCREMENT,post_id INTEGER NOT NULL,user_id INTEGER,username TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT(datetime('now')),FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL)").run();
   await db.prepare("CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id,created_at DESC)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS favorites(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,post_id INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT(datetime('now')),UNIQUE(user_id,post_id),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS ratings(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,post_id INTEGER NOT NULL,rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),created_at TEXT NOT NULL DEFAULT(datetime('now')),UNIQUE(user_id,post_id),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,read_at TEXT,created_at TEXT NOT NULL DEFAULT(datetime('now')),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS email_logs(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_id INTEGER,recipient_count INTEGER NOT NULL DEFAULT 0,subject TEXT NOT NULL,body TEXT NOT NULL,status TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT(datetime('now')),FOREIGN KEY(admin_id) REFERENCES users(id) ON DELETE SET NULL)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_favorites_post ON favorites(post_id)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_ratings_post ON ratings(post_id)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id,created_at DESC)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_email_logs ON email_logs(created_at DESC)").run();
   ready=true;
 }
 async function user(r,e){let h=r.headers.get('Authorization')||'',t=h.startsWith('Bearer ')?h.slice(7):'';return t?ver(t,e.JWT_SECRET):null}
@@ -75,6 +83,21 @@ try{
    let parts=u.pathname.split('/'),id=Number(parts[3]),q=await e.DB.prepare('SELECT download_url FROM posts WHERE id=?').bind(id).first();if(!q||!q.download_url)return J({error:'لینک دانلود موجود نیست.'},404,o);
    await e.DB.prepare('UPDATE posts SET download_count=download_count+1 WHERE id=?').bind(id).run();await e.DB.prepare('UPDATE site_stats SET downloads=downloads+1 WHERE id=1').run();return new Response(null,{status:302,headers:{Location:q.download_url,'Cache-Control':'no-store'}})
  }
+ if(u.pathname.startsWith('/api/posts/')&&u.pathname.endsWith('/favorite')&&r.method==='POST'){
+   let a=await user(r,e);if(!a)return auth(a,o);let id=Number(u.pathname.split('/')[3]);let exists=await e.DB.prepare('SELECT id FROM favorites WHERE user_id=? AND post_id=?').bind(a.id,id).first();if(exists){await e.DB.prepare('DELETE FROM favorites WHERE id=?').bind(exists.id).run();return J({favorite:false},200,o)}await e.DB.prepare('INSERT OR IGNORE INTO favorites(user_id,post_id) VALUES(?,?)').bind(a.id,id).run();return J({favorite:true},200,o)
+ }
+ if(u.pathname.startsWith('/api/posts/')&&u.pathname.endsWith('/rating')&&r.method==='POST'){
+   let a=await user(r,e);if(!a)return auth(a,o);let id=Number(u.pathname.split('/')[3]),b=await body(r),rating=Math.max(1,Math.min(5,Number(b.rating)||0));if(!rating)return J({error:'امتیاز نامعتبر است.'},400,o);await e.DB.prepare('INSERT INTO ratings(user_id,post_id,rating) VALUES(?,?,?) ON CONFLICT(user_id,post_id) DO UPDATE SET rating=excluded.rating').bind(a.id,id,rating).run();let q=await e.DB.prepare('SELECT ROUND(AVG(rating),1) avg,COUNT(*) count FROM ratings WHERE post_id=?').bind(id).first();return J({average:q?.avg||0,count:q?.count||0},200,o)
+ }
+ if(u.pathname.startsWith('/api/posts/')&&u.pathname.endsWith('/engagement')&&r.method==='GET'){
+   let id=Number(u.pathname.split('/')[3]),q=await e.DB.prepare('SELECT (SELECT COUNT(*) FROM favorites WHERE post_id=?) favorites,(SELECT ROUND(AVG(rating),1) FROM ratings WHERE post_id=?) rating,(SELECT COUNT(*) FROM ratings WHERE post_id=?) rating_count').bind(id,id,id).first();return J(q||{favorites:0,rating:0,rating_count:0},200,o)
+ }
+ if(u.pathname==='/api/notifications'&&r.method==='GET'){
+   let a=await user(r,e);if(!a)return auth(a,o);let q=await e.DB.prepare('SELECT id,title,body,read_at,created_at FROM notifications WHERE user_id=? ORDER BY id DESC LIMIT 50').bind(a.id).all();return J({notifications:q.results||[]},200,o)
+ }
+ if(u.pathname.startsWith('/api/notifications/')&&u.pathname.endsWith('/read')&&r.method==='POST'){
+   let a=await user(r,e);if(!a)return auth(a,o);let id=Number(u.pathname.split('/')[3]);await e.DB.prepare("UPDATE notifications SET read_at=datetime('now') WHERE id=? AND user_id=?").bind(id,a.id).run();return J({ok:true},200,o)
+ }
  if(u.pathname.startsWith('/api/posts/')&&u.pathname.endsWith('/comments')&&r.method==='GET'){
    let id=Number(u.pathname.split('/')[3]);let q=await e.DB.prepare("SELECT id,post_id,user_id,username,body,created_at FROM comments WHERE post_id=? ORDER BY id ASC LIMIT 200").bind(id).all();return J({comments:q.results||[]},200,o)
  }
@@ -109,6 +132,19 @@ try{
  }
  if(u.pathname==='/api/admin/users'){
    let a=await user(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);let q=await e.DB.prepare('SELECT id,username,email,role,created_at FROM users ORDER BY id DESC LIMIT 200').all();return J({users:q.results||[]},200,o)
+ }
+ if(u.pathname==='/api/admin/email'&&r.method==='POST'){
+   let a=await user(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);let b=await body(r),mode=b.mode||'selected',subject=clean(b.subject,180),html=String(b.html||b.body||'').slice(0,20000),ids=Array.isArray(b.user_ids)?b.user_ids.map(Number).filter(Boolean):[];if(!subject||!html)return J({error:'عنوان و متن ایمیل الزامی است.'},400,o);
+   let q=mode==='all'?await e.DB.prepare('SELECT id,username,email FROM users ORDER BY id').all():await e.DB.prepare(`SELECT id,username,email FROM users WHERE id IN (${ids.length?ids.map(()=>'?').join(','):'NULL'})`).bind(...ids).all();let users=q.results||[];if(!users.length)return J({error:'گیرنده‌ای انتخاب نشده است.'},400,o);
+   if(!e.RESEND_API_KEY||!e.RESEND_FROM){await e.DB.prepare('INSERT INTO email_logs(admin_id,recipient_count,subject,body,status) VALUES(?,?,?,?,?)').bind(a.id,users.length,subject,html,'not_configured').run();return J({error:'سرویس ایمیل هنوز تنظیم نشده. RESEND_API_KEY و RESEND_FROM را در Cloudflare اضافه کن.'},503,o)}
+   let sent=0,failed=0;for(let u2 of users){try{let rr=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+e.RESEND_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({from:e.RESEND_FROM,to:[u2.email],subject,html})});if(rr.ok){sent++;await e.DB.prepare('INSERT INTO notifications(user_id,title,body) VALUES(?,?,?)').bind(u2.id,subject,html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,500)).run()}else failed++}catch{failed++}}
+   await e.DB.prepare('INSERT INTO email_logs(admin_id,recipient_count,subject,body,status) VALUES(?,?,?,?,?)').bind(a.id,users.length,subject,html,failed?'partial':'sent').run();return J({ok:true,sent,failed},200,o)
+ }
+ if(u.pathname==='/api/admin/email-logs'&&r.method==='GET'){
+   let a=await user(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);let q=await e.DB.prepare('SELECT id,recipient_count,subject,status,created_at FROM email_logs ORDER BY id DESC LIMIT 100').all();return J({logs:q.results||[]},200,o)
+ }
+ if(u.pathname==='/api/admin/notify'&&r.method==='POST'){
+   let a=await user(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);let b=await body(r),title=clean(b.title,180),msg=clean(b.body,1000);if(!title||!msg)return J({error:'عنوان و متن الزامی است.'},400,o);await e.DB.prepare('INSERT INTO notifications(user_id,title,body) SELECT id,?,? FROM users').bind(title,msg).run();return J({ok:true},201,o)
  }
  if(r.method==='GET')return e.ASSETS.fetch(r);
  return J({error:'Not found'},404,o)
