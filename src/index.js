@@ -41,7 +41,7 @@ const sid=r=>{let c=r.headers.get('Cookie')||'',m=c.match(/(?:^|;\s*)ep_sid=([^;
 const newSid=()=>b64(crypto.getRandomValues(new Uint8Array(18)));
 const jsonNoCache=(x,s,o,extra={})=>new Response(JSON.stringify(x),{status:s,headers:{...noCache(o),...extra}});
 async function audit(db,admin,action,type,id,details=''){await db.prepare('INSERT INTO admin_logs(admin_id,action,target_type,target_id,details) VALUES(?,?,?,?,?)').bind(admin?.id||null,action,type,id,details).run()}
-export default {async fetch(r,e){let u=new URL(r.url),o=e.ALLOWED_ORIGIN||'*';if(r.method==='OPTIONS')return J({},204,o);try{await ensureSchema(e.DB);
+export default {async fetch(r,e){let u=new URL(r.url),o=e.ALLOWED_ORIGIN||'*';if(u.pathname==='/api/cs/ticket'&&r.method==='POST'){let a=await me(r,e);if(!a)return auth(a,o);let ticket=await tok({id:a.id,username:a.username,purpose:'cs-ws',exp:Date.now()/1000+60},e.JWT_SECRET);return J({ticket,expires_in:60,username:a.username},200,o)}if(u.pathname==='/api/cs/room'){if(!e.GAME_ROOMS)return J({error:'اتصال بازی پیکربندی نشده؛ Durable Object را در Cloudflare فعال کن.'},503,o);let room=clean(u.searchParams.get('room')||'public',40).replace(/[^a-zA-Z0-9_-]/g,'')||'public';let ticket=clean(u.searchParams.get('ticket')||'',2000);let claims=ticket&&e.JWT_SECRET?await ver(ticket,e.JWT_SECRET):null;if(claims?.purpose!=='cs-ws')claims=null;let nick=claims?.username||clean(u.searchParams.get('nick')||'Guest',20).replace(/[<>]/g,'')||'Guest';let target=new URL(r.url);target.pathname='/room';target.search='';target.searchParams.set('name',nick);target.searchParams.set('pid',claims?.id?String(claims.id):'guest-'+crypto.randomUUID());return e.GAME_ROOMS.get(e.GAME_ROOMS.idFromName(room)).fetch(new Request(target.toString(),r));}if(r.method==='OPTIONS')return J({},204,o);try{await ensureSchema(e.DB);
 if(u.pathname==='/api/health'&&r.method==='GET'){let db=true,err='';try{await e.DB.prepare('SELECT 1').first()}catch(x){db=false;err=String(x)}return jsonNoCache({ok:db,jwt:!!e.JWT_SECRET,db,error:err||undefined,time:new Date().toISOString()},200,o)}
 if(u.pathname==='/api/stats'&&r.method==='GET'){await e.DB.prepare('INSERT OR IGNORE INTO site_stats(id,visits,downloads) VALUES(1,0,0)').run();let [s1,m,p,on,c]=await Promise.all([e.DB.prepare('SELECT visits,downloads FROM site_stats WHERE id=1').first(),e.DB.prepare('SELECT COUNT(*) n FROM users').first(),e.DB.prepare('SELECT COUNT(*) n FROM posts').first(),e.DB.prepare("SELECT COUNT(*) n FROM users WHERE last_seen>=datetime('now','-5 minutes')").first(),e.DB.prepare('SELECT COUNT(*) n FROM comments').first()]);return jsonNoCache({ok:true,visits:Number(s1?.visits||0),downloads:Number(s1?.downloads||0),members:Number(m?.n||0),posts:Number(p?.n||0),online:Number(on?.n||0),comments:Number(c?.n||0),server_time:new Date().toISOString()},200,o)}
 if(u.pathname==='/api/stats/ping'&&r.method==='GET'){let row=await e.DB.prepare('SELECT id,visits,downloads FROM site_stats WHERE id=1').first();return jsonNoCache({ok:true,db:true,site_stats:row||{id:1,visits:0,downloads:0},time:new Date().toISOString()},200,o)}
@@ -91,3 +91,29 @@ if(u.pathname==='/api/admin/notify'&&r.method==='POST'){let a=await me(r,e);if(a
 if(u.pathname==='/api/admin/email'&&r.method==='POST'){let a=await me(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);return J({error:'ارسال ایمیل غیرفعال است.'},503,o)}
 if(u.pathname==='/api/admin/email-logs'&&r.method==='GET'){let a=await me(r,e);if(a?.role!=='admin')return J({error:'دسترسی مدیر لازم است.'},403,o);let q=await e.DB.prepare('SELECT id,recipient_count,subject,status,created_at FROM email_logs ORDER BY id DESC LIMIT 100').all();return J({logs:q.results||[]},200,o)}
 if(r.method==='GET')return e.ASSETS.fetch(r);return J({error:'Not found'},404,o)}catch(x){console.error('EXE_PAK_SERVER_ERROR',x);return J({error:'خطای سرور',detail:e.DEBUG==='1'?String(x):undefined},500,o)}}};
+
+
+// Durable Object: real-time multiplayer room state for the EXE PAK browser arena.
+export class GameRoom {
+  constructor(state, env) { this.state=state; this.env=env; this.players=new Map(); this.sockets=new Set(); this.chat=[]; this.lastPersist=0; }
+  async fetch(request) {
+    const url=new URL(request.url);
+    if (request.headers.get('Upgrade') !== 'websocket') return Response.json({ok:true,room:url.searchParams.get('room')||'public',players:this.snapshot().players,chat:this.chat.slice(-30),mode:'EXE PAK browser arena'} ,{headers:{'cache-control':'no-store'}});
+    const pair=new WebSocketPair(); const client=pair[0], server=pair[1]; server.accept();
+    const id=crypto.randomUUID(), name=(url.searchParams.get('name')||'Guest').slice(0,20), accountId=(url.searchParams.get('pid')||'guest').slice(0,80);
+    const n=this.players.size, p={id,name,accountId,x:120+(n%6)*125,y:100+Math.floor(n/6)*100,hp:100,kills:0,deaths:0,team:n%2?'CT':'T',lastShot:0,color:n%2?'#38bdf8':'#a78bfa'};
+    this.players.set(id,p); this.sockets.add(server); server.serializeAttachment?.({id});
+    server.send(JSON.stringify({type:'welcome',id,player:p,room:{name:'public',players:this.players.size,max:16},chat:this.chat.slice(-30)})); this.broadcast({type:'state',...this.snapshot()});
+    server.addEventListener('message', ev=>{try{const m=JSON.parse(ev.data);this.onMessage(server,id,m)}catch{}});
+    const leave=()=>{this.sockets.delete(server);this.players.delete(id);try{server.close()}catch{}this.broadcast({type:'state',...this.snapshot()})};
+    server.addEventListener('close',leave); server.addEventListener('error',leave);
+    return new Response(null,{status:101,webSocket:client});
+  }
+  snapshot(){return {players:[...this.players.values()].map(p=>({...p})),chat:this.chat.slice(-30),online:this.players.size};}
+  broadcast(data){const text=JSON.stringify(data);for(const ws of this.sockets){try{if(ws.readyState===1)ws.send(text)}catch{}}}
+  onMessage(ws,id,m){const p=this.players.get(id);if(!p||!m||typeof m.type!=='string')return;
+    if(m.type==='move'){const x=Number(m.x),y=Number(m.y);if(Number.isFinite(x)&&Number.isFinite(y)){p.x=Math.max(35,Math.min(965,x));p.y=Math.max(35,Math.min(565,y));p.angle=Number.isFinite(Number(m.angle))?Number(m.angle):0;this.broadcast({type:'state',...this.snapshot()})}}
+    else if(m.type==='shoot'){const now=Date.now();if(now-p.lastShot<220)return;p.lastShot=now;const ax=Number(m.x),ay=Number(m.y);if(!Number.isFinite(ax)||!Number.isFinite(ay))return;let hit=null,best=25;for(const other of this.players.values()){if(other.id===id||other.team===p.team)continue;const d=Math.hypot(other.x-ax,other.y-ay);if(d<best&&Math.hypot(other.x-p.x,other.y-p.y)<460){best=d;hit=other}}if(hit){hit.hp-=34;if(hit.hp<=0){hit.deaths++;p.kills++;hit.hp=100;hit.x=80+Math.random()*840;hit.y=70+Math.random()*460;}this.broadcast({type:'hit',by:p.name,target:hit.name,killer:p.name,players:[...this.players.values()]})}else this.broadcast({type:'shot',id,x:p.x,y:p.y,tx:ax,ty:ay});}
+    else if(m.type==='chat'){const text=String(m.text||'').replace(/[<>]/g,'').trim().slice(0,180);if(!text)return;const item={name:p.name,text,at:Date.now()};this.chat.push(item);if(this.chat.length>60)this.chat.shift();this.broadcast({type:'chat',item});}
+  }
+}
