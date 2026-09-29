@@ -1,0 +1,20 @@
+name = "exe-pak"
+main = "src/index.js"
+compatibility_date = "2026-09-22"
+[assets]
+directory = "./public"
+binding = "ASSETS"
+[[d1_databases]]
+binding = "DB"
+database_name = "exe-pak-db"
+database_id = "818123a1-7a4f-422e-b1a1-d02db0562355"
+[vars]
+ALLOWED_ORIGIN = "*"
+
+[[durable_objects.bindings]]
+name = "GAME_ROOMS"
+class_name = "GameRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GameRoom"]
