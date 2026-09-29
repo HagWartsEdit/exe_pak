@@ -94,6 +94,16 @@ if(r.method==='GET'){const asset=await e.ASSETS.fetch(r);if(u.pathname==='/'||u.
 
 
 // Durable Object: real-time multiplayer room state for the EXE PAK browser arena.
+
+const CS_COVERS = [
+  {minX:130,maxX:230,minY:99,maxY:143}, {minX:316,maxX:444,minY:217,maxY:265},
+  {minX:634,maxX:686,minY:57,maxY:185}, {minX:768,maxX:872,minY:239,maxY:283},
+  {minX:160,maxX:280,minY:379,maxY:423}, {minX:430,maxX:490,minY:389,maxY:493},
+  {minX:592,maxX:728,minY:359,maxY:403}, {minX:832,maxX:888,minY:441,maxY:497},
+  {minX:516,maxX:564,minY:121,maxY:169}
+];
+function segmentBoxHit(x1,y1,x2,y2,b){let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;for(const [p,q] of [[-dx,x1-b.minX],[dx,b.maxX-x1],[-dy,y1-b.minY],[dy,b.maxY-y1]]){if(Math.abs(p)<1e-9){if(q<0)return null;continue}const t=q/p;if(p<0){if(t>t1)return null;if(t>t0)t0=t}else{if(t<t0)return null;if(t<t1)t1=t}}return t0>=0&&t0<=1?t0:null}
+
 export class GameRoom {
   constructor(state, env) { this.state=state; this.env=env; this.players=new Map(); this.sockets=new Set(); this.chat=[]; this.lastPersist=0; }
   async fetch(request) {
@@ -113,7 +123,7 @@ export class GameRoom {
   broadcast(data){const text=JSON.stringify(data);for(const ws of this.sockets){try{if(ws.readyState===1)ws.send(text)}catch{}}}
   onMessage(ws,id,m){const p=this.players.get(id);if(!p||!m||typeof m.type!=='string')return;
     if(m.type==='move'){const x=Number(m.x),y=Number(m.y);if(Number.isFinite(x)&&Number.isFinite(y)){p.x=Math.max(35,Math.min(965,x));p.y=Math.max(35,Math.min(565,y));p.angle=Number.isFinite(Number(m.angle))?Number(m.angle):0;this.broadcast({type:'state',...this.snapshot()})}}
-    else if(m.type==='shoot'){const now=Date.now();if(now-p.lastShot<220)return;p.lastShot=now;const ax=Number(m.x),ay=Number(m.y);if(!Number.isFinite(ax)||!Number.isFinite(ay))return;let hit=null,best=25;for(const other of this.players.values()){if(other.id===id||other.team===p.team)continue;const d=Math.hypot(other.x-ax,other.y-ay);if(d<best&&Math.hypot(other.x-p.x,other.y-p.y)<460){best=d;hit=other}}if(hit){hit.hp-=34;if(hit.hp<=0){hit.deaths++;p.kills++;hit.hp=100;hit.x=80+Math.random()*840;hit.y=70+Math.random()*460;}this.broadcast({type:'hit',by:p.name,target:hit.name,killer:p.name,players:[...this.players.values()]})}else this.broadcast({type:'shot',id,x:p.x,y:p.y,tx:ax,ty:ay});}
+    else if(m.type==='shoot'){const now=Date.now();if(now-p.lastShot<180)return;p.lastShot=now;const ax=Number(m.x),ay=Number(m.y);if(!Number.isFinite(ax)||!Number.isFinite(ay))return;let dx=ax-p.x,dy=ay-p.y,len=Math.hypot(dx,dy)||1,range=Math.min(460,len);dx/=len;dy/=len;const ex=p.x+dx*range,ey=p.y+dy*range;let blockT=1;for(const b of CS_COVERS){const t=segmentBoxHit(p.x,p.y,ex,ey,b);if(t!==null&&t<blockT)blockT=t}const wallX=p.x+(ex-p.x)*blockT,wallY=p.y+(ey-p.y)*blockT,clearRange=range*blockT;let hit=null,best=clearRange;for(const other of this.players.values()){if(other.id===id||other.team===p.team)continue;const vx=other.x-p.x,vy=other.y-p.y,along=vx*dx+vy*dy;if(along<0||along>best)continue;const perp=Math.abs(vx*dy-vy*dx);if(perp<19){best=along;hit=other}}if(hit){hit.hp-=34;if(hit.hp<=0){hit.deaths++;p.kills++;hit.hp=100;hit.x=80+Math.random()*840;hit.y=70+Math.random()*460;}this.broadcast({type:'hit',by:p.name,target:hit.name,killer:p.name,players:[...this.players.values()]})}else this.broadcast({type:'shot',id,x:p.x,y:p.y,tx:wallX,ty:wallY});}
     else if(m.type==='chat'){const text=String(m.text||'').replace(/[<>]/g,'').trim().slice(0,180);if(!text)return;const item={name:p.name,text,at:Date.now()};this.chat.push(item);if(this.chat.length>60)this.chat.shift();this.broadcast({type:'chat',item});}
   }
 }
